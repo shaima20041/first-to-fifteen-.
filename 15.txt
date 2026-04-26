@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reach 15 Game</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    color:white;
+    text-align:center;
+}
+
+h1{
+    margin-top:20px;
+    font-size:42px;
+}
+
+p{
+    font-size:20px;
+    color:#ddd;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(3,100px);
+    gap:15px;
+    justify-content:center;
+    margin-top:25px;
+}
+
+button{
+    height:85px;
+    font-size:30px;
+    border:none;
+    border-radius:14px;
+    cursor:pointer;
+    background:#334155;
+    color:white;
+    transition:0.2s;
+}
+
+button:hover{
+    background:#475569;
+    transform:scale(1.05);
+}
+
+button:disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+}
+
+.info{
+    margin-top:25px;
+    font-size:24px;
+    line-height:2;
+}
+
+#result{
+    margin-top:20px;
+    font-size:34px;
+    font-weight:bold;
+}
+
+#restart{
+    margin-top:20px;
+    padding:12px 30px;
+    font-size:22px;
+    background:#16a34a;
+    display:none;
+}
+
+#restart:hover{
+    background:#22c55e;
+}
+</style>
+</head>
+
+<body>
+
+<h1>FIRST TO FIFTEEN </h1>
+<p>start from Pick numbers -> First player to make 15 by adding 3 numbers wins.</p>
+
+<div class="grid" id="board"></div>
+
+<div class="info">
+    <div id="you"> Your role choose : </div>
+    <div id="ai">AI role: </div>
+</div>
+
+<div id="result"></div>
+
+<button id="restart" onclick="restartGame()">🔄 Play Again</button>
+
+<script>
+let available, player, ai, gameOver;
+
+function startGame(){
+    available = [1,2,3,4,5,6,7,8,9];
+    player = [];
+    ai = [];
+    gameOver = false;
+
+    document.getElementById("board").innerHTML = "";
+    document.getElementById("result").innerHTML = "";
+    document.getElementById("restart").style.display = "none";
+
+    createBoard();
+    updateUI();
+}
+
+function createBoard(){
+    for(let i=1;i<=9;i++){
+        let btn = document.createElement("button");
+        btn.innerText = i;
+        btn.id = "btn"+i;
+        btn.onclick = ()=>playerMove(i);
+        document.getElementById("board").appendChild(btn);
+    }
+}
+
+function updateUI(){
+    document.getElementById("you").innerHTML =
+        " Your Picks: " + player.join(" , ");
+
+    document.getElementById("ai").innerHTML =
+        " AI Picks: " + ai.join(" , ");
+}
+
+function has15(arr){
+    if(arr.length < 3) return false;
+
+    for(let i=0;i<arr.length;i++){
+        for(let j=i+1;j<arr.length;j++){
+            for(let k=j+1;k<arr.length;k++){
+                if(arr[i]+arr[j]+arr[k] === 15){
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+function disable(num){
+    let btn = document.getElementById("btn"+num);
+    btn.disabled = true;
+}
+
+function endGame(msg,color){
+    gameOver = true;
+    let result = document.getElementById("result");
+    result.innerHTML = msg;
+    result.style.color = color;
+
+    document.getElementById("restart").style.display = "inline-block";
+}
+
+function playerMove(num){
+    if(gameOver || !available.includes(num)) return;
+
+    player.push(num);
+    available = available.filter(x=>x!==num);
+    disable(num);
+    updateUI();
+
+    if(has15(player)){
+        endGame(" You Win!","lightgreen");
+        return;
+    }
+
+    if(available.length===0){
+        endGame(" Draw","white");
+        return;
+    }
+
+    setTimeout(aiMove,700);
+}
+
+function aiMove(){
+    if(gameOver) return;
+
+    let pick = available[Math.floor(Math.random()*available.length)];
+
+    ai.push(pick);
+    available = available.filter(x=>x!==pick);
+    disable(pick);
+    updateUI();
+
+    if(has15(ai)){
+        endGame(" AI Wins!","red");
+        return;
+    }
+
+    if(available.length===0){
+        endGame(" Draw","white");
+    }
+}
+
+function restartGame(){
+    startGame();
+}
+
+startGame();
+</script>
+
+</body>
+</html>
